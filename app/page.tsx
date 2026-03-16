@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, Clock, Info } from "lucide-react";
+import { Clock, Info } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 
 type Computed = { type: "TIME" | "SCALAR"; val: number; str?: string };
@@ -327,6 +327,32 @@ export default function App(): React.ReactElement {
     setTooltip((prev) => ({ ...prev, show: false }));
   };
 
+  const handleContainerMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if ((e.target as HTMLElement).tagName === "SPAN") return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    const scrollTop = bgRef.current?.scrollTop || 0;
+    const totalY = y + scrollTop;
+    const lineIndex = Math.floor((totalY - 16) / 28);
+
+    const linesCount = inputText.split("\n").length;
+    if (lineIndex >= 0 && lineIndex < linesCount) {
+      const hasError = committedLines.has(lineIndex) && errors[lineIndex];
+      if (hasError) {
+        setTooltip({
+          show: true,
+          text: errors[lineIndex],
+          x: e.clientX,
+          y: e.clientY,
+        });
+        return;
+      }
+    }
+    setTooltip((prev) =>
+      prev.show ? { show: false, text: "", x: 0, y: 0 } : prev,
+    );
+  };
+
   const renderHighlightedLine = (line: string): React.ReactNode => {
     if (!line) return null;
     const regex =
@@ -339,7 +365,7 @@ export default function App(): React.ReactElement {
       // Time (dunkleres Blau)
       if (part.match(/^\d{1,5}[:.]\d{2}(?:[:.]\d{2})?$/)) {
         return (
-          <span key={j} className="text-blue-700 font-medium">
+          <span key={j} className="text-blue-600 font-medium">
             {part}
           </span>
         );
@@ -362,7 +388,7 @@ export default function App(): React.ReactElement {
         return (
           <span
             key={j}
-            className="text-purple-700 font-medium border-b border-dashed border-purple-400 cursor-help pointer-events-auto"
+            className="text-zinc-600 font-medium border-b border-dashed border-zinc-400 cursor-help pointer-events-auto"
             onMouseEnter={(e) =>
               setTooltip({
                 show: true,
@@ -401,7 +427,7 @@ export default function App(): React.ReactElement {
       // Scalar Numbers (dunkleres Smaragdgrün)
       if (part.match(/^\d+(?:[.,]\d+)?$/)) {
         return (
-          <span key={j} className="text-emerald-700 font-medium">
+          <span key={j} className="text-zinc-600 font-medium">
             {part}
           </span>
         );
@@ -426,11 +452,11 @@ export default function App(): React.ReactElement {
       <div className="w-full max-w-4xl bg-white rounded-2xl shadow-xl overflow-hidden border border-zinc-200">
         {/* Header */}
         <div className="bg-blue-600 p-6 text-white flex items-center space-x-3">
-          <Clock className="w-6 h-6 text-blue-400" />
+          <Clock className="w-6 h-6 text-blue-300" />
           <h1 className="text-2xl font-bold tracking-tight">
-            vii<span className="text-blue-400">.sh</span>
+            vii<span className="text-blue-300">.sh</span>
           </h1>
-          <span className=" font-medium ml-2 border-l border-zinc-700 pl-4">
+          <span className="font-medium ml-2 border-l border-blue-400 pl-4 text-blue-50">
             Time Calculator
           </span>
         </div>
@@ -442,8 +468,9 @@ export default function App(): React.ReactElement {
             <p>
               Calculate using <strong>HH:MM</strong>. Allowed operators are{" "}
               <strong>+ - * /</strong>. <br />
-              Hover over <strong>#references</strong> (e.g., #1) to see their
-              current value!
+              Use <strong>#1</strong>, <strong>#2</strong>, etc. to reference
+              previous lines. Press Enter after each line to confirm and see
+              results.
             </p>
           </div>
 
@@ -454,7 +481,15 @@ export default function App(): React.ReactElement {
             >
               Your calculations:
             </label>
-            <div className="relative w-full h-72 bg-white border border-zinc-300 rounded-xl shadow-inner overflow-hidden flex">
+            <div
+              className="relative w-full h-72 bg-white border border-zinc-200 rounded-xl shadow-sm overflow-hidden flex transition-all hover:border-zinc-300 focus-within:border-zinc-400 focus-within:ring-4 focus-within:ring-zinc-100"
+              onMouseMove={handleContainerMouseMove}
+              onMouseLeave={() =>
+                setTooltip((prev) =>
+                  prev.show ? { show: false, text: "", x: 0, y: 0 } : prev,
+                )
+              }
+            >
               {/* Layer 1: Error Background */}
               <div
                 ref={bgRef}
@@ -514,8 +549,10 @@ export default function App(): React.ReactElement {
                   onClick={handleInteraction}
                   onBlur={handleBlur}
                   onScroll={handleScroll}
-                  placeholder={"Example:\n08:00\n01:30 * 2\n#1 + #2\n- 00:15"}
-                  className="absolute inset-0 w-full h-full py-4 pl-4 pr-2 resize-none outline-none font-mono text-base leading-7 whitespace-pre overflow-auto bg-transparent text-transparent caret-zinc-800 z-10"
+                  placeholder={
+                    "12:15-08:00\n0:45*6\n#1+#2\n12:34:56/2\n\n(Press Enter after each line to calculate)"
+                  }
+                  className="absolute inset-0 w-full h-full py-4 pl-4 pr-2 resize-none outline-none font-mono text-base leading-7 whitespace-pre overflow-auto bg-transparent text-transparent placeholder:text-zinc-400/60 caret-zinc-800 z-10"
                   spellCheck="false"
                 />
               </div>
@@ -523,7 +560,7 @@ export default function App(): React.ReactElement {
               {/* Outputs & Error Messages per line */}
               <div
                 ref={outputRef}
-                className="w-[25%] min-w-[120px] h-full py-4 pr-4 pl-2 overflow-hidden font-mono text-sm leading-7 text-right bg-zinc-50 border-l border-zinc-200 pointer-events-none select-none z-10 flex-shrink-0"
+                className="min-w-[120px] max-w-[40%] px-4 py-4 h-full overflow-hidden font-mono text-sm leading-7 text-right bg-zinc-50 border-l border-zinc-200 pointer-events-none select-none z-10 flex-shrink-0"
               >
                 {linesArray.map((_, i) => {
                   const showFeedback = committedLines.has(i);
@@ -549,34 +586,14 @@ export default function App(): React.ReactElement {
             </div>
           </div>
 
-          {/* Global Errors */}
-          {visibleErrors.length > 0 && (
-            <div className="bg-rose-50 border border-rose-200 p-4 rounded-xl text-rose-700 text-sm animate-in fade-in">
-              <div className="flex items-center space-x-2 font-bold mb-2">
-                <AlertTriangle className="w-4 h-4" />
-                <span>Errors found:</span>
-              </div>
-              <ul className="list-disc list-inside space-y-1">
-                {visibleErrors.map(([lineIdx, msg]) => (
-                  <li key={lineIdx}>
-                    <span className="font-semibold">
-                      Line {parseInt(lineIdx) + 1}:
-                    </span>{" "}
-                    {msg}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
           {/* Grand Total */}
-          <div className="flex justify-center mt-2">
-            <div className="bg-zinc-900 rounded-xl p-6 border border-zinc-800 flex flex-col items-center justify-center transition-all w-64 shadow-lg">
-              <span className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-1 text-center">
+          <div className="flex justify-center mt-6">
+            <div className="bg-zinc-50 rounded-xl p-8 border border-zinc-200 flex flex-col items-center justify-center transition-all w-80 shadow-sm">
+              <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2 text-center">
                 Total Result
               </span>
               <div
-                className={`text-4xl font-bold ${totalResult.startsWith("-") ? "text-rose-400" : "text-white"} font-mono tracking-tight`}
+                className={`text-5xl font-bold ${totalResult.startsWith("-") ? "text-rose-500" : "text-zinc-800"} font-mono tracking-tight`}
               >
                 {totalResult}
               </div>
