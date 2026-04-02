@@ -12,6 +12,7 @@ interface EditorProps {
   onTextChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onBlur: () => void;
   onPaste: (e: React.ClipboardEvent<HTMLTextAreaElement>) => void;
+  className?: string;
 }
 
 export function Editor({
@@ -23,6 +24,7 @@ export function Editor({
   onTextChange,
   onBlur,
   onPaste,
+  className,
 }: EditorProps) {
   const [tooltip, setTooltip] = useState<{
     show: boolean;
@@ -177,7 +179,7 @@ export function Editor({
   return (
     <>
       <div
-        className="relative flex h-72 w-full overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm transition-all focus-within:border-zinc-400 focus-within:ring-4 focus-within:ring-zinc-100 hover:border-zinc-300"
+        className={`relative flex w-full overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm transition-all focus-within:border-zinc-400 focus-within:ring-4 focus-within:ring-zinc-100 hover:border-zinc-300 ${className ?? "h-72"}`}
         onMouseMove={handleContainerMouseMove}
         onMouseLeave={() =>
           setTooltip((prev) =>
@@ -253,7 +255,7 @@ export function Editor({
         {/* Outputs per line */}
         <div
           ref={outputRef}
-          className="pointer-events-none z-10 h-full max-w-[40%] min-w-30 shrink-0 overflow-hidden border-l border-zinc-200 bg-zinc-50 px-4 py-4 text-right font-mono text-sm leading-7 select-none"
+          className="pointer-events-none z-10 h-full max-w-[40%] min-w-20 shrink-0 overflow-hidden border-l border-zinc-200 bg-zinc-50 px-2 py-4 text-right font-mono text-sm leading-7 select-none sm:min-w-30 sm:px-4"
         >
           {linesArray.map((_, i) => (
             <div
