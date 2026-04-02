@@ -88,7 +88,7 @@ export function Editor({
       // Time value
       if (part.match(/^\d{1,5}[:.]\d{2}(?:[:.]\d{2})?$/)) {
         return (
-          <span key={j} className="text-blue-600 font-medium">
+          <span key={j} className="font-medium text-blue-600">
             {part}
           </span>
         );
@@ -109,7 +109,7 @@ export function Editor({
         return (
           <span
             key={j}
-            className="text-zinc-600 font-medium border-b border-dashed border-zinc-400 cursor-help pointer-events-auto"
+            className="pointer-events-auto cursor-help border-b border-dashed border-zinc-400 font-medium text-zinc-600"
             onMouseEnter={(e) =>
               setTooltip({
                 show: true,
@@ -139,7 +139,7 @@ export function Editor({
       // Operator
       if (part.match(/^[+\-*/]$/)) {
         return (
-          <span key={j} className="text-zinc-500 font-medium">
+          <span key={j} className="font-medium text-zinc-500">
             {part}
           </span>
         );
@@ -148,7 +148,7 @@ export function Editor({
       // Parenthesis
       if (part === "(" || part === ")") {
         return (
-          <span key={j} className="text-zinc-400 font-medium">
+          <span key={j} className="font-medium text-zinc-400">
             {part}
           </span>
         );
@@ -157,7 +157,7 @@ export function Editor({
       // Scalar number
       if (part.match(/^\d+(?:[.,]\d+)?$/)) {
         return (
-          <span key={j} className="text-zinc-600 font-medium">
+          <span key={j} className="font-medium text-zinc-600">
             {part}
           </span>
         );
@@ -177,7 +177,7 @@ export function Editor({
   return (
     <>
       <div
-        className="relative w-full h-72 bg-white border border-zinc-200 rounded-xl shadow-sm overflow-hidden flex transition-all hover:border-zinc-300 focus-within:border-zinc-400 focus-within:ring-4 focus-within:ring-zinc-100"
+        className="relative flex h-72 w-full overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm transition-all focus-within:border-zinc-400 focus-within:ring-4 focus-within:ring-zinc-100 hover:border-zinc-300"
         onMouseMove={handleContainerMouseMove}
         onMouseLeave={() =>
           setTooltip((prev) =>
@@ -188,7 +188,7 @@ export function Editor({
         {/* Layer 1: Error Background */}
         <div
           ref={bgRef}
-          className="absolute top-0 bottom-0 left-12 right-0 pointer-events-none z-0 overflow-hidden"
+          className="pointer-events-none absolute top-0 right-0 bottom-0 left-12 z-0 overflow-hidden"
           style={{ paddingTop: "1rem" }}
         >
           {linesArray.map((_, i) => (
@@ -207,13 +207,13 @@ export function Editor({
         {/* Layer 2: Line Numbers */}
         <div
           ref={lineNumbersRef}
-          className="w-12 h-full py-4 overflow-hidden bg-zinc-50 border-r border-zinc-200 select-none z-10 shrink-0"
+          className="z-10 h-full w-12 shrink-0 overflow-hidden border-r border-zinc-200 bg-zinc-50 py-4 select-none"
         >
           {linesArray.map((_, i) => (
             <div
               key={i}
-              className={`h-7 text-right pr-3 text-sm font-mono leading-7 ${
-                visibleErrors[i] ? "text-rose-500 font-bold" : "text-zinc-400"
+              className={`h-7 pr-3 text-right font-mono text-sm leading-7 ${
+                visibleErrors[i] ? "font-bold text-rose-500" : "text-zinc-400"
               }`}
             >
               {i + 1}
@@ -222,11 +222,11 @@ export function Editor({
         </div>
 
         {/* Layer 3: Editor Field */}
-        <div className="relative flex-1 h-full min-w-0">
+        <div className="relative h-full min-w-0 flex-1">
           {/* 3.1: Syntax Highlighting */}
           <div
             ref={highlightRef}
-            className="absolute inset-0 w-full h-full py-4 pl-4 pr-2 font-mono text-base leading-7 whitespace-pre overflow-hidden bg-transparent z-20 pointer-events-none"
+            className="pointer-events-none absolute inset-0 z-20 h-full w-full overflow-hidden bg-transparent py-4 pr-2 pl-4 font-mono text-base leading-7 whitespace-pre"
             aria-hidden="true"
           >
             {linesArray.map((line, i) => (
@@ -245,7 +245,7 @@ export function Editor({
             onPaste={onPaste}
             onScroll={handleScroll}
             placeholder={"12.15-08.00\n0.45*6\n#1+#2\n12.34.56/2"}
-            className="absolute inset-0 w-full h-full py-4 pl-4 pr-2 resize-none outline-none font-mono text-base leading-7 whitespace-pre overflow-auto bg-transparent text-transparent placeholder:text-zinc-400/60 caret-zinc-800 z-10"
+            className="absolute inset-0 z-10 h-full w-full resize-none overflow-auto bg-transparent py-4 pr-2 pl-4 font-mono text-base leading-7 whitespace-pre text-transparent caret-zinc-800 outline-none placeholder:text-zinc-400/60"
             spellCheck="false"
           />
         </div>
@@ -253,12 +253,12 @@ export function Editor({
         {/* Outputs per line */}
         <div
           ref={outputRef}
-          className="min-w-30 max-w-[40%] px-4 py-4 h-full overflow-hidden font-mono text-sm leading-7 text-right bg-zinc-50 border-l border-zinc-200 pointer-events-none select-none z-10 shrink-0"
+          className="pointer-events-none z-10 h-full max-w-[40%] min-w-30 shrink-0 overflow-hidden border-l border-zinc-200 bg-zinc-50 px-4 py-4 text-right font-mono text-sm leading-7 select-none"
         >
           {linesArray.map((_, i) => (
             <div
               key={i}
-              className="h-7 whitespace-nowrap overflow-hidden text-ellipsis text-zinc-500"
+              className="h-7 overflow-hidden text-ellipsis whitespace-nowrap text-zinc-500"
               title={lineResults[i] ?? ""}
             >
               {lineResults[i] || ""}
@@ -270,7 +270,7 @@ export function Editor({
       {/* Custom Tooltip */}
       {tooltip.show && (
         <div
-          className="fixed z-50 bg-zinc-800 text-white text-sm font-medium px-3 py-1.5 rounded-lg shadow-xl pointer-events-none transform -translate-y-full transition-opacity duration-150 border border-zinc-700"
+          className="pointer-events-none fixed z-50 -translate-y-full transform rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm font-medium text-white shadow-xl transition-opacity duration-150"
           style={{ left: tooltip.x + 15, top: tooltip.y - 10 }}
         >
           {tooltip.text}
