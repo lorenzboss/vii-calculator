@@ -40,7 +40,6 @@ export function formatTime(totalSeconds: number, forceSeconds = false): string {
 export function evaluateLine(
   line: string,
   tempComputedLines: Array<Computed | null>,
-  globalHasSeconds: boolean,
 ): Computed | null {
   // Block unrecognized characters (parentheses allowed)
   const leftover = line
@@ -106,8 +105,23 @@ export function evaluateLine(
   const peek = (): PToken | undefined => tokens[pos];
   const consume = (): PToken => tokens[pos++];
 
-  // Forward-declared so parsePrimary can call it (safe: only invoked after full declaration)
-  let parseExpr: () => Computed;
+  // Declared as a function so it is hoisted and parsePrimary can call it
+  function parseExpr(): Computed {
+    let left = parseMulDiv();
+    while (pos < tokens.length) {
+      const tok = peek();
+      if (tok?.type !== "OP" || (tok.val !== "+" && tok.val !== "-")) break;
+      consume();
+      const right = parseMulDiv();
+      if (left.type !== right.type)
+        throw new Error("Cannot add/subtract time and numbers");
+      left = {
+        type: left.type,
+        val: tok.val === "+" ? left.val + right.val : left.val - right.val,
+      };
+    }
+    return left;
+  }
 
   const parsePrimary = (): Computed => {
     const tok = peek();
@@ -178,23 +192,6 @@ export function evaluateLine(
     return left;
   };
 
-  parseExpr = (): Computed => {
-    let left = parseMulDiv();
-    while (pos < tokens.length) {
-      const tok = peek();
-      if (tok?.type !== "OP" || (tok.val !== "+" && tok.val !== "-")) break;
-      consume();
-      const right = parseMulDiv();
-      if (left.type !== right.type)
-        throw new Error("Cannot add/subtract time and numbers");
-      left = {
-        type: left.type,
-        val: tok.val === "+" ? left.val + right.val : left.val - right.val,
-      };
-    }
-    return left;
-  };
-
   const result = parseExpr();
 
   if (pos < tokens.length) {
@@ -230,7 +227,7 @@ export function runCalculation(text: string): CalculationResult {
     }
 
     try {
-      const res = evaluateLine(line, tempComputedLines, hasSeconds);
+      const res = evaluateLine(line, tempComputedLines);
       if (res) {
         tempComputedLines.push(res);
         const formattedRes =

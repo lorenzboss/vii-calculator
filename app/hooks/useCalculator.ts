@@ -1,15 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
-import { type Computed, formatTime, runCalculation } from "../lib/calculator";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { formatTime, runCalculation } from "../lib/calculator";
 
 export function useCalculator() {
-  const [inputText, setInputText] = useState<string>("");
-  const [lineResults, setLineResults] = useState<Array<string | null>>([]);
-  const [errors, setErrors] = useState<Record<number, string>>({});
-  const [totalResult, setTotalResult] = useState<string>("00:00");
-  const [computedValues, setComputedValues] = useState<Array<Computed | null>>(
-    [],
+  const [inputText, setInputText] = useState<string>(
+    () => localStorage.getItem("vii-calc-input") ?? "",
   );
-  const [hasSeconds, setHasSeconds] = useState<boolean>(false);
   const [visibleErrors, setVisibleErrors] = useState<Record<number, string>>(
     {},
   );
@@ -22,20 +17,8 @@ export function useCalculator() {
     {},
   );
 
-  // Load persisted input on first mount
-  useEffect(() => {
-    const saved = localStorage.getItem("vii-calc-input");
-    if (saved !== null) setInputText(saved);
-  }, []);
-
-  useEffect(() => {
-    const result = runCalculation(inputText);
-    setHasSeconds(result.hasSeconds);
-    setComputedValues(result.computedValues);
-    setLineResults(result.lineResults);
-    setErrors(result.errors);
-    setTotalResult(result.totalResult);
-  }, [inputText]);
+  const { hasSeconds, computedValues, lineResults, errors, totalResult } =
+    useMemo(() => runCalculation(inputText), [inputText]);
 
   // Keep errorsRef in sync for async timer callbacks
   useEffect(() => {
@@ -82,8 +65,9 @@ export function useCalculator() {
 
   // Clean up pending timers on unmount
   useEffect(() => {
+    const timers = errorTimersRef.current;
     return () => {
-      for (const id of Object.values(errorTimersRef.current)) clearTimeout(id);
+      for (const id of Object.values(timers)) clearTimeout(id);
     };
   }, []);
 
