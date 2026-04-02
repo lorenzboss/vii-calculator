@@ -1,4 +1,4 @@
-# vii.sh — Time Calculator
+# vii.sh - Time Calculator
 
 A web-based calculator for time values.
 
