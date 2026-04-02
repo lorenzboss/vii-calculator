@@ -2,9 +2,14 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { formatTime, runCalculation } from "../lib/calculator";
 
 export function useCalculator() {
-  const [inputText, setInputText] = useState<string>(
-    () => localStorage.getItem("vii-calc-input") ?? "",
-  );
+  const [inputText, setInputText] = useState<string>("");
+
+  // Load persisted input after mount (avoids SSR/client hydration mismatch)
+  useEffect(() => {
+    const saved = localStorage.getItem("vii-calc-input");
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reading from external system (localStorage) on mount is intentional
+    if (saved !== null) setInputText(saved);
+  }, []);
   const [visibleErrors, setVisibleErrors] = useState<Record<number, string>>(
     {},
   );
