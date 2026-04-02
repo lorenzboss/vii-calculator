@@ -12,9 +12,9 @@ export function parseTimeStrToSeconds(token: string): number {
     [hours, minutes, seconds] = parts;
   }
   if (minutes > 59)
-    throw new Error(`Invalid time '${token}': minutes must be 0–59`);
+    throw new Error(`Invalid time '${token}': minutes must be 0-59`);
   if (seconds > 59)
-    throw new Error(`Invalid time '${token}': seconds must be 0–59`);
+    throw new Error(`Invalid time '${token}': seconds must be 0-59`);
   return hours * 3600 + minutes * 60 + seconds;
 }
 

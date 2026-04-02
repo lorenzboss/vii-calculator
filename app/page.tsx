@@ -48,7 +48,7 @@ export default function App(): React.ReactElement {
             <Info className="h-5 w-5 sm:h-6 sm:w-6" />
           </button>
 
-          {/* Dropdown info panel — overlays content below */}
+          {/* Dropdown info panel - overlays content below */}
           <div
             className={`absolute top-full right-3 z-50 w-72 origin-top-right overflow-hidden rounded-xl border border-zinc-200 bg-white text-zinc-800 shadow-xl transition-all duration-200 sm:right-6 ${
               showInfo
@@ -90,7 +90,7 @@ export default function App(): React.ReactElement {
           </div>
         </div>
 
-        {/* Dimming backdrop — fades in/out, closes info on click */}
+        {/* Dimming backdrop - fades in/out, closes info on click */}
         <div
           className={`fixed inset-0 z-40 bg-black/30 backdrop-blur-[1px] transition-opacity duration-200 ${
             showInfo ? "opacity-100" : "pointer-events-none opacity-0"
@@ -137,7 +137,7 @@ export default function App(): React.ReactElement {
             </div>
           </div>
 
-          {/* Editor — fills all remaining space */}
+          {/* Editor - fills all remaining space */}
           <div className="min-h-0 flex-1">
             <Editor
               className="h-full sm:h-72"
