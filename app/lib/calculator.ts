@@ -169,7 +169,7 @@ export function evaluateLine(
         } else if (left.type === "SCALAR" && right.type === "SCALAR") {
           left = { type: "SCALAR", val: left.val / right.val };
         } else if (left.type === "TIME" && right.type === "TIME") {
-          throw new Error("Time \u00f7 Time is not allowed. Use a number.");
+          left = { type: "SCALAR", val: left.val / right.val };
         } else {
           throw new Error("Number \u00f7 Time is not allowed");
         }
